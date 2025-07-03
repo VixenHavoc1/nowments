@@ -29,7 +29,7 @@ export default async function handler(req, res) {
   const apiKey = process.env.NOWPAYMENTS_API_KEY;
 
   try {
-    const invoiceRes = await fetch('https://api.nowpayments.io/v1/invoice', {
+    const invoiceRes = await fetch('https://sandbox.nowpayments.io/v1/invoice', {
       method: 'POST',
       headers: {
         'x-api-key': apiKey,
