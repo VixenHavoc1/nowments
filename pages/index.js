@@ -1,3 +1,3 @@
-xport default function Home() {
+export default function Home() {
   return <div>Nowments Backend is Running</div>;
 }
