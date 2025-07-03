@@ -1,9 +1,20 @@
- // pages/api/create-invoice.js
-
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-  const { price_amount, user_id, tier_id } = req.body;
+  const { user_id, tier_id } = req.body;
+
+  const tierPrices = {
+    tier1: 5,
+    tier2: 10,
+    tier3: 20,
+  };
+
+  const price_amount = tierPrices[tier_id];
+  if (!price_amount) {
+    return res.status(400).json({ error: 'Invalid tier_id' });
+  }
 
   const apiKey = process.env.NOWPAYMENTS_API_KEY;
 
@@ -24,10 +35,13 @@ export default async function handler(req, res) {
     });
 
     const data = await invoiceRes.json();
-    if (!invoiceRes.ok) return res.status(500).json({ error: data });
+    if (!invoiceRes.ok) {
+      return res.status(500).json({ error: data });
+    }
 
     return res.status(200).json({ invoice_url: data.invoice_url });
   } catch (err) {
+    console.error(err);
     return res.status(500).json({ error: 'Something went wrong.' });
   }
 }
