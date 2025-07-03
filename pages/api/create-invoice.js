@@ -1,26 +1,27 @@
 // pages/api/create-invoice.js
 
 export default async function handler(req, res) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*'); // Or set to your domain like 'https://yourfrontend.vercel.app'
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    // Preflight request
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { user_id, tier_id, price_amount = 5 } = req.body; // Default price_amount to 5 if not provided
+  const { user_id, tier_id, price_amount = 5 } = req.body;
   const apiKey = process.env.NOWPAYMENTS_API_KEY;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   if (!apiKey || !baseUrl) {
     return res.status(500).json({ error: 'Missing environment variables.' });
   }
-
-  // Debug logs (viewable in Vercel logs)
-  console.log("🔧 Creating invoice with:", {
-    user_id,
-    tier_id,
-    price_amount,
-    baseUrl,
-    partialApiKey: apiKey.slice(0, 4) + '***',
-  });
 
   try {
     const invoiceRes = await fetch('https://sandbox.nowpayments.io/v1/invoice', {
@@ -39,7 +40,6 @@ export default async function handler(req, res) {
     });
 
     const data = await invoiceRes.json();
-    console.log("📦 NowPayments response:", data);
 
     if (!invoiceRes.ok) {
       return res.status(500).json({ error: data });
