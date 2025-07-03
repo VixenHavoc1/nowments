@@ -1,34 +1,23 @@
 // pages/api/create-invoice.js
 
 export default async function handler(req, res) {
-  if (req.method === 'OPTIONS') {
-    // CORS preflight support
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    return res.status(200).end();
-  }
 
+ res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   if (req.method !== 'POST') {
-    console.warn('Invalid method:', req.method);
+    console.error('❌ Method not allowed:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  res.setHeader('Access-Control-Allow-Origin', '*');
-
-  const { price_amount, user_id, tier_id } = req.body;
-
-  if (!price_amount || !user_id || !tier_id) {
-    console.error('Missing required fields:', { price_amount, user_id, tier_id });
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
+  const { price_amount = 5, user_id, tier_id } = req.body;
 
   const apiKey = process.env.NOWPAYMENTS_API_KEY;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   if (!apiKey || !baseUrl) {
-    console.error('Missing environment variables:', { apiKey, baseUrl });
-    return res.status(500).json({ error: 'Missing environment variables' });
+    console.error('❌ Missing NOWPAYMENTS_API_KEY or NEXT_PUBLIC_BASE_URL in env');
+    return res.status(500).json({ error: 'Missing config' });
   }
 
   try {
@@ -50,19 +39,14 @@ export default async function handler(req, res) {
     const data = await invoiceRes.json();
 
     if (!invoiceRes.ok) {
-      console.error('NOWPayments API error:', {
-        status: invoiceRes.status,
-        statusText: invoiceRes.statusText,
-        response: data,
-      });
-      return res.status(500).json({ error: data });
+      console.error('❌ Invoice creation failed:', data);
+      return res.status(500).json({ error: 'NowPayments invoice error', detail: data });
     }
 
-    console.log('Invoice created successfully:', data);
-    return res.status(200).json({ invoice_url: data.invoice_url });
-
+    console.log('✅ Invoice created:', data.invoice_url);
+    return res.status(200).json({ payment_link: data.invoice_url });
   } catch (err) {
-    console.error('Unexpected error creating invoice:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Invoice error:', err);
+    return res.status(500).json({ error: 'Something went wrong.' });
   }
 }
