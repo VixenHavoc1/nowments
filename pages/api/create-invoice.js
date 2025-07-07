@@ -33,13 +33,15 @@ export default async function handler(req, res) {
       }),
     });
 
+    const contentType = invoiceRes.headers.get('content-type');
+    const rawBody = await invoiceRes.text(); // ✅ Read ONCE
+
     let data;
-    try {
-      data = await invoiceRes.json();
-    } catch (err) {
-      const raw = await invoiceRes.text();
-      console.error("Non-JSON response from NOWPayments:", raw);
-      return res.status(500).json({ error: "NOWPayments returned invalid JSON", raw });
+    if (contentType && contentType.includes('application/json')) {
+      data = JSON.parse(rawBody);
+    } else {
+      console.error("NOWPayments non-JSON response:", rawBody);
+      return res.status(500).json({ error: "NOWPayments returned non-JSON", raw: rawBody });
     }
 
     if (!invoiceRes.ok) {
