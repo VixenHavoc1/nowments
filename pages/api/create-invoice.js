@@ -37,12 +37,20 @@ export default async function handler(req, res) {
       }),
     });
 
-    const data = await invoiceRes.json();
+   let data;
+try {
+  data = await invoiceRes.json();
+} catch (err) {
+  const rawText = await invoiceRes.text();
+  console.error("NOWPayments non-JSON response:", rawText);
+  return res.status(500).json({ error: 'Invalid JSON response from NOWPayments', raw: rawText });
+}
 
-    if (!invoiceRes.ok) {
-      console.error("NOWPayments API Error:", data);
-      return res.status(500).json({ error: data });
-    }
+if (!invoiceRes.ok) {
+  console.error("NOWPayments API Error:", data);
+  return res.status(500).json({ error: data });
+}
+
 
     return res.status(200).json({ payment_link: data.invoice_url });
   } catch (err) {
