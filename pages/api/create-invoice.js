@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const invoiceRes = await fetch('https://api.sandbox.nowpayments.io/v1/invoice', {
+    const invoiceRes = await fetch('https://api.nowpayments.io/v1/invoice', {
       method: 'POST',
       headers: {
         'x-api-key': apiKey,
