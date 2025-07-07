@@ -1,13 +1,9 @@
 export default async function handler(req, res) {
-  // Set CORS headers for all requests
-  res.setHeader('Access-Control-Allow-Origin', '*'); // or restrict to frontend domain
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -37,20 +33,19 @@ export default async function handler(req, res) {
       }),
     });
 
-   let data;
-try {
-  data = await invoiceRes.json();
-} catch (err) {
-  const rawText = await invoiceRes.text();
-  console.error("NOWPayments non-JSON response:", rawText);
-  return res.status(500).json({ error: 'Invalid JSON response from NOWPayments', raw: rawText });
-}
+    let data;
+    try {
+      data = await invoiceRes.json();
+    } catch (err) {
+      const raw = await invoiceRes.text();
+      console.error("Non-JSON response from NOWPayments:", raw);
+      return res.status(500).json({ error: "NOWPayments returned invalid JSON", raw });
+    }
 
-if (!invoiceRes.ok) {
-  console.error("NOWPayments API Error:", data);
-  return res.status(500).json({ error: data });
-}
-
+    if (!invoiceRes.ok) {
+      console.error("NOWPayments API Error:", data);
+      return res.status(500).json({ error: data });
+    }
 
     return res.status(200).json({ payment_link: data.invoice_url });
   } catch (err) {
