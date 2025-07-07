@@ -21,6 +21,7 @@
       <h2>Choose a Tier</h2>
       <button onClick={() => handlePay('tier1', 5)}>Tier 1 – $5</button>
       <button onClick={() => handlePay('tier2', 10)}>Tier 2 – $10</button>
+        <button onClick={() => handlePay('tier1', 5)}>Tier 3 – $20</button>
       <button onClick={onClose}>Close</button>
     </div>
   );
